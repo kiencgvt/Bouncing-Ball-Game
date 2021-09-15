@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bouncing Ball Game</title>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+<button type="button" style="position: absolute; left: 850px; top: 20px" onclick="Load()">Play Game</button>
+<button type="button" style="position: absolute; left: 940px; top: 20px" onclick="Reload()">Replay</button>
+<br>
+<h4 id="point" style="position: absolute; left: 860px; top: 40px"></h4>
+<script>
+    let GameBoard = {
+        width: 800,
+        height: 600,
+    }
+    let Ball = {
+        x: 400,
+        y: 570,
+        r: 10,
+        speedX: 1,
+        speedY: -1,
+        alpha: function (a) {
+            let tanAlpha = Math.tan(a * Math.PI / 180);
+            this.speedY = -this.speedX * tanAlpha;
+        },
+        move: function () {
+            this.x += this.speedX;
+            this.y += this.speedY;
+        },
+        changeDirectionX: function () {
+            this.speedX = -this.speedX;
+        },
+        changeDirectionY: function () {
+            this.speedY = -this.speedY;
+        },
+    }
+    let Bar = {
+        width: 200,
+        height: 20,
+        x: 300,
+        speed: 100,
+        moveLeft: function () {
+            this.x -= this.speed;
+        },
+        moveRight: function () {
+            this.x += this.speed;
+        },
+    }
+    let t;
+    let count = 0;
+    let c = document.getElementById("myCanvas");
+    c.width = GameBoard.width;
+    c.height = GameBoard.height;
+    c.style.border = "1px solid black";
+    let ctx = c.getContext("2d");
+    DrawBall();
+    DrawBar();
+
+    function DrawBall() {
+        ctx.beginPath();
+        ctx.arc(Ball.x, Ball.y, Ball.r, 0, 2 * Math.PI);
+        ctx.fillStyle = '#808080';
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function DrawBar() {
+        ctx.beginPath();
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(Bar.x, c.height - Bar.height, Bar.width, Bar.height);
+        ctx.closePath();
+    }
+
+    Ball.alpha(45);
+
+    function MoveBall() {
+        ctx.clearRect(0, 0, c.width, c.height - Bar.height);
+        ctx.clearRect(0, GameBoard.height - Bar.height, Bar.x, Bar.height);
+        ctx.clearRect(Bar.x + Bar.width, GameBoard.height - Bar.height, GameBoard.width - Bar.x - Bar.width, Bar.height);
+        Ball.move();
+        DrawBall();
+        if (Ball.x === (GameBoard.width - Ball.r) || Ball.x === Ball.r) {
+            Ball.changeDirectionX();
+        }
+        if (Ball.y === Ball.r) {
+            Ball.changeDirectionY();
+        } else if ((Ball.y === (GameBoard.height - Bar.height - Ball.r)) && (Ball.x >= (Bar.x - Ball.r)) && (Ball.x <= (Bar.x + Bar.width + Ball.r))) {
+            Ball.changeDirectionY();
+            count++;
+            document.getElementById("point").innerText = "Point: " + count;
+        } else if (Ball.y >= (GameBoard.height - Ball.r)) {
+            alert("You Lose!")
+            clearInterval(t);
+        }
+    }
+
+    function Load() {
+        t = setInterval(MoveBall, 1);
+    }
+
+    function Reload() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        Ball.x = 400;
+        Ball.y = 570;
+        Ball.speedX = 1
+        Ball.speedY = -1
+        Bar.x = 300;
+        DrawBall();
+        DrawBar();
+        Load();
+    }
+
+    window.onkeydown = function (e) {
+        if (e.keyCode === 37) {
+            if (Bar.x > 0) {
+                ctx.clearRect(0, c.height - Bar.height, c.width, Bar.height);
+                Bar.moveLeft();
+                DrawBar();
+            }
+        }
+        if (e.keyCode === 39) {
+            if (Bar.x < (c.width - Bar.width)) {
+                ctx.clearRect(0, c.height - Bar.height, c.width, Bar.height);
+                Bar.moveRight();
+                DrawBar();
+            }
+        }
+    }
+</script>
+</body>
+</html>
